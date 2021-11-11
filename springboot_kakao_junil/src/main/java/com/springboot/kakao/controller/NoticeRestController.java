@@ -18,20 +18,20 @@ import com.springboot.kakao.model.dto.NoticeInsertDto;
 import com.springboot.kakao.service.NoticeService;
 
 @RestController
-@RequestMapping("notice")
+@RequestMapping("/notice")
 public class NoticeRestController {
 
 	@Autowired
 	private NoticeService noticeService;
 	
-	@PostMapping("insert")
+	@PostMapping("/insert")
 	public String noticeInsert(NoticeInsertDto noticeInsertDto) {
 		int insertFlag = 0;
 		insertFlag = noticeService.noticeInsert(noticeInsertDto);
 		return Integer.toString(insertFlag);
 	}
 	
-	@GetMapping("file-download/{originFileName}")
+	@GetMapping("/file-download/{originFileName}")
 	public byte[] noticeDtlFileDownload(HttpServletResponse response,
 										@PathVariable String originFileName,
 										@RequestParam String tempFileName) {

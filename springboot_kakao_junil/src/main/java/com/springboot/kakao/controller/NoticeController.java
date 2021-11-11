@@ -28,7 +28,7 @@ import com.springboot.kakao.service.NoticeService;
 import com.springboot.kakao.service.UserService;
 
 @Controller
-@RequestMapping("notice")
+@RequestMapping("/notice")
 public class NoticeController {
 
 	@Autowired
@@ -37,7 +37,7 @@ public class NoticeController {
 	@Autowired
 	private UserService userService;
 	
-	@GetMapping("list/{page}")
+	@GetMapping("/list/{page}")
 	public ModelAndView noticeIndex(@PathVariable String page, HttpServletRequest request) {
 		Cookie[] cookies = request.getCookies();
 		if(cookies != null) {
@@ -55,13 +55,13 @@ public class NoticeController {
 		return mav;
 	}
 	
-	@GetMapping("insert")
+	@GetMapping("/insert")
 	public String noticeInsertIndex(Model model, HttpServletRequest request) {
 		
 		HttpSession session = request.getSession();
 		
 		if(session.getAttribute("login_user") == null) {
-			return "redirect:sign-in";
+			return "redirect:/sign-in";
 		}
 		
 		Date date = new Date();
@@ -69,15 +69,7 @@ public class NoticeController {
 		return "notice/notice_insert";
 	}
 	
-	@ResponseBody
-	@RequestMapping(value = "notice-insert", method = RequestMethod.POST)
-	public String noticeInsert(NoticeInsertDto noticeInsertDto) {
-		int insertFlag = 0;
-		insertFlag = noticeService.noticeInsert(noticeInsertDto);
-		return Integer.toString(insertFlag);
-	}
-	
-	@GetMapping("{code}")
+	@GetMapping("/{code}")
 	public String noticeDtlIndex(Model model, @PathVariable String code) {
 		NoticeDto noticeDto = noticeService.getNotice(code);
 		System.out.println(noticeDto);
@@ -86,37 +78,13 @@ public class NoticeController {
 		return "notice/notice_dtl";
 	}
 	
-	@ResponseBody
-	@RequestMapping(value = "file-download", method = RequestMethod.GET)
-	public byte[] noticeDtlFileDownload(HttpServletResponse response,
-										@RequestParam String originFileName,
-										@RequestParam String tempFileName) {
-		FileBean fileBean = new FileBean();
-		fileBean.setOriginFileName(originFileName);
-		fileBean.setTempFileName(tempFileName);
-		byte[] fileData = noticeService.fileDownload(fileBean);
-		
-		String encodingOriginFileName = null;
-		
-		try {
-			encodingOriginFileName = new String(originFileName.getBytes("UTF-8"), "ISO-8859-1");
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		}
-		
-		response.setHeader("Content-Disposition", "attachment;filename=\"" + encodingOriginFileName + "\"");
-		response.setContentLength(fileData.length);
-		
-		return fileData;
-	}
-	
-	@DeleteMapping("{code}")
+	@DeleteMapping("/{code}")
 	public String noticeDelete(Model model, @PathVariable String code) {
 		int result = noticeService.noticeDelete(code);
 		if(result == 2) {
-			return "redirect:notice/list/1";
+			return "redirect:/notice/list/1";
 		}
-		return "redirect:notice/" + code;
+		return "redirect:/notice/" + code;
 	}
 }
 
