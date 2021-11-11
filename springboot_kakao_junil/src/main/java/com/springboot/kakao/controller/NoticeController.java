@@ -14,6 +14,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -72,10 +73,17 @@ public class NoticeController {
 	@GetMapping("/{code}")
 	public String noticeDtlIndex(Model model, @PathVariable String code) {
 		NoticeDto noticeDto = noticeService.getNotice(code);
-		System.out.println(noticeDto);
 		model.addAttribute("notice", noticeDto);
 		model.addAttribute("fileList", noticeService.getFileList(noticeDto));
 		return "notice/notice_dtl";
+	}
+	
+	@GetMapping("/update/{code}")
+	public String noticeUpdataIndex(Model model, @PathVariable String code) {
+		NoticeDto noticeDto = noticeService.getNotice(code);
+		model.addAttribute("notice", noticeDto);
+		model.addAttribute("fileList", noticeService.getFileList(noticeDto));
+		return "notice/notice_update";
 	}
 	
 	@DeleteMapping("/{code}")

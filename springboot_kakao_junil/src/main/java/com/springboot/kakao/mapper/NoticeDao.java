@@ -16,4 +16,5 @@ public interface NoticeDao {
 	public int plusNoticeCount(int notice_code);
 	public int noticeMstDelete(int notice_code);
 	public int noticeDtlDelete(int notice_code);
+	public int noticeUpdate(NoticeDto noticeDto);
 }

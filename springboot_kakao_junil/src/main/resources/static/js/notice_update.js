@@ -1,4 +1,25 @@
 const notice_submit = document.querySelector(".notice_submit");
+const updateForm = document.querySelector("#update-form");
+
+function noticeUpdate() {
+	let formData = new FormData(updateForm);
+	
+	$.ajax({
+		type: "put",
+		url: "notice/"+ formData.get('notice_code'),
+		enctype: "multipart/form-data",
+		data: formData,
+		processData: false,
+		contentType: false,
+		success: function(data){
+			
+		},
+		error: function(){
+			alert('전송실패!');
+		}
+	})
+}
+
 
 notice_submit.onclick = () => {
 	const notice_title = document.querySelector(".notice_title");

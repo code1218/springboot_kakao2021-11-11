@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -10,6 +11,7 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/mainNav.css">
     <link rel="stylesheet" href="/css/notice_update.css">
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -20,7 +22,7 @@
             </div>
 
             <div class="notice_insert_main">
-                <form action="notice-update" method="post">
+                <form id="update-form">
                 	<input type="hidden" name="notice_code" value="${notice.notice_code }">
                     <ul class="ni_title_ul">
                         <li class="ni_title_li">제목</li>
@@ -28,8 +30,8 @@
                     </ul>
                     <ul class="ni_info_ul">
                         <li>작성자</li>
-                        <input type="hidden" class="notice_writer" name="notice_writer" value="${login_user.name }">
-                        <li>${login_user.name }</li>
+                        <input type="hidden" class="notice_writer" name="notice_writer" value="${login_user.user_name }">
+                        <li>${login_user.user_name }</li>
                         <li>작성일</li>
                         <li>${notice.notice_date }</li>
                     </ul>
@@ -38,6 +40,23 @@
                             <textarea class="notice_content" name="notice_content">${notice.notice_content }</textarea>
                         </li>
                     </ul>
+                    <ul>
+                    	<li>
+                    		<input type="file" multiple="multiple" name="notice_file">
+                    	</li>
+                    </ul>
+                    <ul>
+	                	<li>
+	                		<c:forEach var="fileBean" items="${fileList }" varStatus="st">
+	                			<a href="file-download/${fileBean.originFileName }?tempFileName=${fileBean.tempFileName }">
+	                				${fileBean.originFileName }
+	                			</a>
+	                			<c:if test="${not st.last }">
+	                				/
+	                			</c:if>
+	                		</c:forEach>
+	                	</li>
+	                </ul>
 
                     <button type="button" class="notice_submit">수정완료</button>
                     <button type="reset">다시쓰기</button>
@@ -49,7 +68,7 @@
         </footer>
     </div>
     <script src="https://kit.fontawesome.com/c3df4d7d1c.js" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="js/notice_update.js"></script>
+    <script type="text/javascript" src="/js/notice_update.js"></script>
 </body>
 </html>
 
