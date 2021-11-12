@@ -246,7 +246,6 @@ public class NoticeServiceImpl implements NoticeService {
 		
 		MultipartFile[] multipartFiles = noticeUpdateDto.getNotice_file();
 		String filePath = context.getRealPath("/static/fileupload");
-		
 		for(MultipartFile multipartFile : multipartFiles) {
 			String originFile = multipartFile.getOriginalFilename();
 			if(originFile.equals("")) {

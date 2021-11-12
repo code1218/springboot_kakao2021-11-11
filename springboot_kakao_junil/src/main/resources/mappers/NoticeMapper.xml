@@ -101,10 +101,8 @@
 			notice_dtl
 		set
 			notice_content = #{notice_content},
-			<if test="originFileNames != null">
-				originFileNames = #{originFileNames},
-				tempFileNames = #{tempFileNames},
-			</if>
+			originFileNames = #{originFileNames},
+			tempFileNames = #{tempFileNames},
 			update_date = now()
 		where
 			notice_code = #{notice_code};

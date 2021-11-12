@@ -24,7 +24,6 @@ function noticeUpdate() {
 		}
 	}
 	
-	
 	$.ajax({
 		type: "put",
 		url: "/notice/update/"+ formData.get('notice_code'),
