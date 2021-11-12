@@ -54,7 +54,7 @@
         </footer>
     </div>
     <script src="https://kit.fontawesome.com/c3df4d7d1c.js" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="js/notice_insert.js"></script>
+    <script type="text/javascript" src="/js/notice_insert.js"></script>
 </body>
 </html>
 
