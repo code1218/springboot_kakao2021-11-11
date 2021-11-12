@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.springboot.kakao.model.beans.FileBean;
 import com.springboot.kakao.model.dto.NoticeInsertDto;
+import com.springboot.kakao.model.dto.NoticeUpdateDto;
 import com.springboot.kakao.service.NoticeService;
 
 @RestController
@@ -52,6 +54,13 @@ public class NoticeRestController {
 		response.setContentLength(fileData.length);
 		
 		return fileData;
+	}
+	
+	@PutMapping("/update/{code}")
+	public String noticeUpdate(@PathVariable int code, NoticeUpdateDto noticeUpdateDto) {
+		int updateFlag = 0;
+		updateFlag = noticeService.noticeUpdate(noticeUpdateDto);
+		return Integer.toString(updateFlag);
 	}
 }
 

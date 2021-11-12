@@ -15,16 +15,29 @@ for(let i = 0; i < file_dbtn.length; i++){
 
 function noticeUpdate() {
 	let formData = new FormData(updateForm);
+	for(let i = 0; i < file_name.length; i++){
+		if(file_name[i].style.textDecoration == 'line-through'){
+			let originFileNames = formData.getAll('originFileNames');
+			let tempFileNames = formData.getAll('tempFileNames');
+			formData.append('deleteOriginFileNames', originFileNames[i]);
+			formData.append('deleteTempFileNames', tempFileNames[i]);
+		}
+	}
+	
 	
 	$.ajax({
 		type: "put",
-		url: "notice/"+ formData.get('notice_code'),
+		url: "/notice/update/"+ formData.get('notice_code'),
 		enctype: "multipart/form-data",
 		data: formData,
 		processData: false,
 		contentType: false,
 		success: function(data){
-			
+			if(data == '1'){
+				location.href = '/notice/'+formData.get('notice_code');
+			}else{
+				alert('수정 실패!');
+			}
 		},
 		error: function(){
 			alert('전송실패!');
@@ -44,7 +57,6 @@ notice_submit.onclick = () => {
 	}else if(notice_content.value.length == 0){
 		alert("공지사항 내용을 입력해 주세요.");
 	}else {
-		const notice_form = document.querySelector("form");
-		notice_form.submit();
+		noticeUpdate();
 	}
 }

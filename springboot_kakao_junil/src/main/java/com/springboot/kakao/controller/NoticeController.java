@@ -79,7 +79,7 @@ public class NoticeController {
 	}
 	
 	@GetMapping("/update/{code}")
-	public String noticeUpdataIndex(Model model, @PathVariable String code) {
+	public String noticeUpdateIndex(Model model, @PathVariable String code) {
 		NoticeDto noticeDto = noticeService.getNotice(code);
 		model.addAttribute("notice", noticeDto);
 		model.addAttribute("fileList", noticeService.getFileList(noticeDto));
