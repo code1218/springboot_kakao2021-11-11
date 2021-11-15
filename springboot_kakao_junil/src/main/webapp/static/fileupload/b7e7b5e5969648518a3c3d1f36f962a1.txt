@@ -1,0 +1,512 @@
+package calculator;
+
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+
+import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JFrame;
+
+class CalculatorFrame extends JFrame implements ActionListener {
+
+	// Calculator
+	Calculator calc;
+	
+	// Opers // Numbers
+	ArrayList<Double> numbers = new ArrayList<>();
+	ArrayList<String> opers = new ArrayList<>();
+
+	// String
+	String inputText;
+	String totalText;
+	boolean lastResult;
+//	final String ERROR_MSG = "0으로 나눌수 없습니다."; // <- 어떻게 출력하지
+	// Layouts
+	BorderLayout borderLayout;
+
+	// Buttons
+	JButton equal;
+	JButton backSpace;
+	ArrayList<JButton> jButtons = new ArrayList<>();
+	String[] signs = { "7", "8", "9", "/", "4", "5", "6", "*", "1", "2", "3", "+", "C", "0", ".", "-" };
+
+	// Panels
+	JPanel textField;
+	JPanel buttonField;
+	JPanel lastField;
+
+	// Labels
+	JLabel maker;
+
+	// TextFields
+	JTextField subText;
+	JTextField mainText;
+
+	public CalculatorFrame() {
+		initData();
+		setInitLayout();
+		addEventListener();
+	}
+	
+	// 데이터 생성 및 세팅
+	private void initData() {
+		setTitle("계산기");
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setSize(350, 600);
+		borderLayout = new BorderLayout();
+		textField = new JPanel(new BorderLayout(0, 5)); // 패널의 y축 5만큼 간격을 가진다
+		buttonField = new JPanel(new GridLayout(4, 4)); // 버튼을 담을 패널 생성 4열 4행의 구조로 이루어져있다.
+		lastField = new JPanel(new BorderLayout(0, 0)); // 아래쪽 패널 생성
+		subText = new JTextField(totalText, SwingConstants.CENTER); // 계산 과정 출력
+		mainText = new JTextField(inputText, SwingConstants.CENTER); // 계산기 메인 창
+		maker = new JLabel("제작 : owljun2@gmail.com", SwingConstants.RIGHT); // 제작자
+		for (String sign : signs) { // 버튼 생성 for 문
+			jButtons.add(new JButton(sign));
+		}
+		equal = new JButton("="); // buttonField에 들어가지 못한 녀석들을 따로 만들어 주었다
+		backSpace = new JButton("←"); // 위와 같음
+		inputText = " "; // mainText 에 들어갈 String 타입 객체
+		totalText = " "; // subText 에 들어갈 String
+		lastResult = false; // 방금 연산을 했는지 여부 파악
+		calc = new Calculator(); // 내부 클래스 Calculator를 인스턴스화
+	}
+
+	// 레이아웃 세팅
+	private void setInitLayout() {
+		setVisible(true);
+		setResizable(false);
+		setLayout(borderLayout); // 전체 레이아웃을 borderLayout 으로 지정
+
+		add(textField, BorderLayout.NORTH); // 위쪽(계산 과정과 결과를 출력할 패널 추가), 프로그램 전체 기준 위쪽 배치
+		// backSpace 버튼 추가 및 글자 크기 설정, textField 패널 자체에 borderLayout 을 걸어놓았기 때문에 패널 기준 아래쪽 배치
+		textField.add(backSpace, BorderLayout.SOUTH); 
+		backSpace.setFont(new Font("고딕",Font.BOLD,20));
+		// 계산과정을 출력할 subText 텍스트필드 추가, 패널 기준 위쪽에 배치 및 글자,배경 색상 크기 조정
+		textField.add(subText, BorderLayout.NORTH);
+		subText.setForeground(Color.WHITE);
+		subText.setBackground(Color.LIGHT_GRAY);
+		subText.setFont(new Font("고딕",Font.BOLD,20));
+		subText.setHorizontalAlignment(JTextField.CENTER); // 글자 정렬위치
+		// 계산결과를 출력할 mainText 텍스트필드 추가, 패널 기준 중앙에 배치 및 글자 조정
+		textField.add(mainText, BorderLayout.CENTER);
+		mainText.setFont(new Font("고딕",Font.BOLD,40));
+		mainText.setHorizontalAlignment(JTextField.RIGHT); // 글자 정렬위치
+		
+		// 버튼들을 나열할 buttonField 패널 추가, 프로그램 전체기준 중앙 배치
+		add(buttonField, BorderLayout.CENTER);
+		// for 문을 사용하여 버튼 생성과 동시에 글자크기 조절
+		for (int i = 0; i < jButtons.size(); i++) {
+			buttonField.add(jButtons.get(i));
+			jButtons.get(i).setFont(new Font("고딕",Font.BOLD,20));
+		}
+		// 12번 인덱스를 가진 문자열 "C" 의 색상을 빨간색으로 설정
+		jButtons.get(12).setForeground(Color.red);
+
+		// "=" 버튼과 제작자를 넣을 패널 lastField 추가 전체기준 아래쪽 배치
+		add(lastField, BorderLayout.SOUTH);
+		// "=" 버튼 추가 및 글자 설정
+		lastField.add(equal, BorderLayout.CENTER);
+		equal.setFont(new Font("고딕",Font.BOLD,20));
+		// 만든이를 적을 JLabel maker 추가
+		lastField.add(maker, BorderLayout.SOUTH);
+		maker.setFont(new Font("고딕",Font.BOLD,15));
+	}
+	
+	// 이벤트 리스너 세팅
+	private void addEventListener() {
+		// 키보드 입력을 받기 위한 메서드 실행 this 를 사용하지 않은 이유는
+		// 인터페이스 KeyListener의 추상 메서드중 하나만 사용하기위해서 이다.
+		this.addKeyListener(new SetKey()); 
+		
+		// for 문을 사용하여 버튼을 하나씩 액션리스너 메서드 실행
+		for (JButton jButton : jButtons) {
+			jButton.addActionListener(this);
+		}
+		
+		backSpace.addActionListener(this);
+		equal.addActionListener(this);
+	}
+
+	// 백스페이스를 눌렀을때 실행되는 메서드
+	private void backSpace() {
+		if (inputText.equals(" ")) { // 입력창에 아무것도 없다면 실행되지 않는다
+
+		} else { // substring을 사용하여 문자열의 맨마지막 하나를 빼고 저장, 출력한다.
+			try {
+				inputText = inputText.substring(0, inputText.length() - 1);
+				mainText.setText(inputText);
+			} catch(StringIndexOutOfBoundsException e4) {
+				e4.printStackTrace();
+			}
+		}
+	}
+
+	// "C" 버튼을 눌렀을때 실행되는 메서드
+	private void clear() {
+		totalText = " "; // subText 필드에 들어갈 totalText값 삭제
+		subText.setText(totalText); // 삭제된 값 출력
+		inputText = " "; // mainText 필드에 들어갈 inputText값 삭제
+		mainText.setText(inputText); // 삭제된 값 출력
+		numbers.removeAll(numbers); // 계산할 숫자들을 저장중인 numbers 어레이리스트 비우기
+		opers.removeAll(opers); // numbers에 저장된 숫자들을 연산할 연산자들을 저장준인 opers 어레이리스트 비우기
+	}
+	
+	// "=" 버튼 , 키보드 Enter , = 눌렀을때 실행되는 메서드
+	private void equal() {
+		if (inputText != " ") { // 입력창에 숫자를 입력하지않고 "="을 누르는 것을 방어하는 코드
+			numbers.add(Double.parseDouble(inputText.strip()));  // inputText 는 String 타입이기에 Double로 형변환시켜 배열에저장
+		}
+		if (!opers.contains("=") && opers.size() >= 1) { // 연산자를 보관중인 배열에는 = 기호는 하나만 있어야하고, 사칙연산자중 하나는 있어야만 실행된다
+			opers.add("=");
+			totalText += inputText + opers.get(opers.size() - 1); // 연산과정을 보여주기위한 장치
+			calc.run(); // 내부클래스 calculator의 run메서드 실행
+			inputText = calc.getResult(); // calculator의 result멤버변수를 가져와서 담아라
+		}
+		mainText.setText(inputText); // 결과값 출력
+		subText.setText(totalText); // 연산과정 출력
+		lastResult = true; // 결과값을 가지고 연산할 것인지 여부파악
+	}
+	
+	// "." 이 입력으로 들어왔을때 실행되는 메서드
+	private void dot() { 
+		// 아무 숫자도 입력되지 않은상태, .이 두개이상 찍히는 경우를 방어하기 위한 코드
+		if (inputText.equals(" ") || inputText.contains(".")) { 
+		} else {
+			inputText += ".";
+			mainText.setText(inputText);
+		}
+	}
+
+	// 아래 4개의 메서드는 사칙연산이 입력으로 들어왔을때의 메서드이다.
+	private void plus() {
+		if (inputText != " ") { // 방어코드
+			numbers.add(Double.parseDouble(inputText.strip()));
+		}
+		if (opers.isEmpty()) { // 이 녀석이 실행되기전에 저장된 연산자가 없다면 연산결과를 보여주는 텍스트를 리셋시켜라.
+			totalText = " "; // ex) 32 + 3 = 35 실행 후 바로 + 3을 할 경우 calc.run() 메서드에 의해 opers가 리셋되는데, 이전의 연산결과인 32 + 3을 없애기 위함이다.
+		}
+		if (numbers.size() >= 1) { // 연산자가 나오기 전에 숫자가 하나이상 있어야만 한다.
+			opers.add("+");
+			totalText += numbers.get(numbers.size()-1) +" "+ opers.get(opers.size() - 1) +" "; // 연산과정 출력
+		}
+		mainText.setText(inputText); // 연산결과 출력
+		inputText = " "; // 결과 출력후 리셋시키는 이유는 다음 숫자를 입력하기전까지 방금 입력한 숫자를 보기 위함이다.
+		subText.setText(totalText); // 연산과정 출력
+	}
+
+	private void sub() {
+		if (inputText != " ") { // plus 코드와 같음
+			numbers.add(Double.parseDouble(inputText.strip()));
+		}
+		if (opers.isEmpty()) {
+			totalText = " ";
+		}
+		if (numbers.size() >= 1) {
+			opers.add("-");
+			totalText += numbers.get(numbers.size()-1) +" "+ opers.get(opers.size() - 1) +" ";
+		}
+		mainText.setText(inputText);
+		inputText = " ";
+		subText.setText(totalText);
+	}
+
+	private void mul() { // plus 코드와 같음
+		if (inputText != " ") {
+			numbers.add(Double.parseDouble(inputText.strip()));
+		}
+		if (opers.isEmpty()) {
+			totalText = " ";
+		}
+		if (numbers.size() >= 1) {
+			opers.add("*");
+			totalText += numbers.get(numbers.size()-1) +" "+ opers.get(opers.size() - 1) +" "; 
+		}
+		mainText.setText(inputText);
+		inputText = " ";
+		subText.setText(totalText);
+	}
+
+	private void div() { // plus 코드와 같음
+		if (inputText != " ") {
+			numbers.add(Double.parseDouble(inputText.strip()));
+		}
+		if (opers.isEmpty()) {
+			totalText = " ";
+		}
+		if (numbers.size() >= 1) {
+			opers.add("/");
+			totalText += numbers.get(numbers.size()-1) +" "+ opers.get(opers.size() - 1) +" ";
+		}
+		mainText.setText(inputText);
+		inputText = " ";
+		subText.setText(totalText);
+	}
+
+
+	// ActionListener 타입 상속시 구현해야하는 메서드
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		JButton button = (JButton) e.getSource(); // 무슨 버튼을 클릭했는지 담는 button 객체
+		String getText = button.getText(); // 코드량을 줄이기위한 변수사용
+		String getButtonText; // 위와 같음
+
+		for (JButton jbutton : jButtons) { // forEach 문을 사용하여 버튼이 담긴 배열을 하나씩 가져온다.
+			getButtonText = jbutton.getText(); // 배열을 가져온 jbutton 에는 주소값이 담겨있기 때문에 getText() 메서드로 텍스트를 불러온다.
+			// 클릭된 버튼 (getText) 가 특수문자 라면 continue 문으로 빠져나온다.
+			// 이유는 위에 메서드로 구현을 해놓았기 때문이다.
+			if (getText.equals("/") || getText.equals("+") || getText.equals("*") || getText.equals("-") 
+					|| getText.equals("C")) {
+				continue;	
+			}
+			// "." 이 입력으로 들어왔을때 기능
+			else if (getText.equals(".")) {
+				dot();
+			} 
+			// 배열안의 특수문자를 걸러내고 숫자들이 입력으로 들어왔을때의 기능
+			else if (getText.equals(getButtonText)) {
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += getButtonText;
+				mainText.setText(inputText);	
+			}
+		} // end of for
+
+		// 백스페이스 입력시
+		if (getText.equals(backSpace.getText())) {
+			backSpace();
+		}
+
+		// Clear
+		if (getText.equals(jButtons.get(12).getText())) {
+			clear();
+		}
+
+		// 사칙연산 , = 버튼 구현
+		if (getText.equals(jButtons.get(11).getText())) {
+			plus();
+		}
+		if (getText.equals(jButtons.get(15).getText())) {
+			sub();
+		}
+		if (getText.equals(jButtons.get(7).getText())) {
+			mul();
+		}
+		if (getText.equals(jButtons.get(3).getText())) {
+			div();
+		}
+		if (getText.equals(equal.getText())) {
+			equal();
+		}
+	} // end of actionPerformed
+
+	// 키보드 입력받는 클래스, KeyAdapter 사용하여 하나의 메서드만 구현
+	class SetKey extends KeyAdapter {
+		int keyCode;
+
+		@Override
+		public void keyPressed(KeyEvent e) {
+			keyCode = e.getKeyCode();
+			switch (keyCode) {
+			// 숫자
+			case 96:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "0";
+				mainText.setText(inputText);
+				break;
+			case 97:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "1";
+				mainText.setText(inputText);
+				break;
+			case 98:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "2";
+				mainText.setText(inputText);
+				break;
+			case 99:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "3";
+				mainText.setText(inputText);
+				break;
+			case 100:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "4";
+				mainText.setText(inputText);
+				break;
+			case 101:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "5";
+				mainText.setText(inputText);
+				break;
+			case 102:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "6";
+				mainText.setText(inputText);
+				break;
+			case 103:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "7";
+				mainText.setText(inputText);
+				break;
+			case 104:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "8";
+				mainText.setText(inputText);
+				break;
+			case 105:
+				if ((opers.isEmpty()) && (lastResult)) {
+					clear();
+					lastResult = false;
+				} 
+				inputText += "9";
+				mainText.setText(inputText);
+				break;
+				
+			// "."
+			case 110:
+				dot();
+				break;
+
+			// 백스페이스
+			case 8:
+				backSpace();
+				break;
+				
+			// 사칙연산
+			case 107:
+				plus();
+				break;
+			case 109:
+				sub();
+				break;
+			case 106:
+				mul();
+				break;
+			case 111:
+				div();
+				break;
+				
+			case 61: // =
+				equal();
+				break;
+			case 10: // enter
+				equal();
+				break;
+			}
+		}
+	} // end of SetKey class
+
+	// 계산기 클래스
+	private class Calculator {
+		
+		private double result; // 결과값 담을 변수
+		private String oper; // 연산자 담을 변수
+
+		public String getResult() { // getter
+			return result + "";
+		}
+
+		public double run() {
+			// 계산 과정중 숫자값이 들어있을때만 동작
+			if (numbers.isEmpty() == false) {
+				result = numbers.get(0); // 연산의 기준이 될 맨 처음의 숫자 설정
+														// 이때 위의 if문이 없다면 에러가 날 수 있다.
+				
+				for (int i = 0; i < numbers.size(); i++) {
+					oper = opers.get(i); // 사용할 순서대로 연산자를 가져온다.
+					switch (oper) {
+					// 0번 인덱스는 맨 처음숫자로 사용했기때문에 +1을 해준다.
+					case "+":
+						add(numbers.get(i + 1));
+						break;
+					case "-":
+						sub(numbers.get(i + 1));
+						break;
+					case "*":
+						mul(numbers.get(i + 1));
+						break;
+					case "/":
+						div(numbers.get(i + 1));
+						break;
+					// "=" 이 들어왔을 경우에는 더 이상 연산이 끝난 상황이기때문에
+					// 다음 연산을 받기 위해 모든 배열을 비워준다. 결과값인 result 는 
+					//	위쪽의 메서드 equal()에서 inputText로 저장되어있기 때문에 모두 비워도 지속적인 연산이 가능하다.
+					case "=":
+						numbers.removeAll(numbers);
+						opers.removeAll(opers);
+						break;
+					} // end of switch - case
+				} // end of for
+			}
+			return result;
+		} // end of run
+
+		private void add(double d) {
+			result += d;
+		}
+
+		private void sub(double d) {
+			result -= d;
+		}
+
+		private void mul(double d) {
+			result *= d;
+		}
+
+		private void div(double d) {
+			try {
+				result /= d;
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}
+		}
+
+	}
+} // end of class
+
+public class CalcFrame {
+
+	public static void main(String[] args) {
+
+		new CalculatorFrame();
+		// 문제점1. 곱하기,나누기 우선순위 연산, () 추가
+		// 문제점2. 키인식이 될때도 있고 안될때도 있다.
+	}
+
+}
